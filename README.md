@@ -1,5 +1,3 @@
-# Homo 2.0
-
 NAME        Homo
 
 VERSION     2.0
