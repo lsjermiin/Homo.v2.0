@@ -16,7 +16,7 @@
 // Emails             : lars.jermiin [at] anu.edu.au
 //                      lars.jermiin [at] ucd.ie
 //
-// URL                : https://github.com/lsjermiin/Homo2
+// URL                : https://github.com/lsjermiin/Homo2.0
 //
 // Date begun         : 14 April, 2019
 //
@@ -1027,19 +1027,19 @@ long double xChi_Square_Distribution_Tail(long double x, int dof) {
 int main(int argc, char** argv){
     unsigned rows_columns(0);
     unsigned dataType(0);
-    int dfB(0);
+    int df(0);
     unsigned long sum_dm(0), rejectB(0);
     unsigned long total, counter;
     unsigned long dm[max_array][max_array];            // 2D divergence matrix
-    double d_EFS(0.0), d_EMS(0.0);
+    double d_efs(0.0), d_ems(0.0);
     double row_sum[max_array], col_sum[max_array];
-    double min_pB(1.0), family_Wise_Error_Rate(0.05);
-    double max_dCDF(-numeric_limits<double>::max());
-    double min_dCDF(numeric_limits<double>::max());
+    double min_p(1.0), family_Wise_Error_Rate(0.05);
+    double max_dcdf(-numeric_limits<double>::max());
+    double min_dcdf(numeric_limits<double>::max());
     long double BTS(0.0), pB(0.0);
     vector<int> sites;
     vector<double> row_of_double;
-    vector<vector<double> > mat_dobs, mat_pB, mat_dCFS, mat_dEFS, mat_dEMS;
+    vector<vector<double> > mat_dobs, mat_p, mat_dcdf, mat_defs, mat_dems;
     string nature_of_data, survey;
     string inName, outName1, outName2, outName3, outName4, outName5, outName6;
     ofstream outfile1, outfile2, outfile3, outfile4, outfile5, outfile6;
@@ -1151,10 +1151,10 @@ int main(int argc, char** argv){
     for (vector<vector<double> >::size_type i = 0; i != taxon.size(); i++) {
         mat_dobs.push_back(row_of_double);
     }
-    mat_pB = mat_dobs;
-    mat_dEFS = mat_dobs;
-    mat_dEMS = mat_dobs;
-    mat_dCFS = mat_dobs;
+    mat_p = mat_dobs;
+    mat_defs = mat_dobs;
+    mat_dems = mat_dobs;
+    mat_dcdf = mat_dobs;
     if (toupper(survey[0]) == 'F') {
         outfile1.open(outName1.c_str());
         outfile1 << "Program, Homo" << endl;
@@ -1225,60 +1225,60 @@ int main(int argc, char** argv){
             
             // Bowker's matched-pairs test of symmetry
             BTS = 0.0;
-            dfB = 0;
+            df = 0;
             for (size_t m = 0; m != rows_columns; ++m) {
                 for (size_t n = m+1; n != rows_columns; ++n) {
                     if (dm[m][n] + dm[n][m] > 0) {
-                        ++dfB;
+                        ++df;
                         BTS = BTS + ((long double)(SQR(dm[m][n] - dm[n][m])))/(dm[m][n] + dm[n][m]);
                     }
                 }
             }
-            if (dfB == 0) {
+            if (df == 0) {
                 pB = 1.0;
             } else {
-                pB = xChi_Square_Distribution_Tail(BTS, dfB);
+                pB = xChi_Square_Distribution_Tail(BTS, df);
             }
-            if (pB < min_pB) {
-                min_pB = pB;
+            if (pB < min_p) {
+                min_p = pB;
             }
             if (pB < family_Wise_Error_Rate) {
                 ++rejectB;
             }
             if (toupper(survey[0]) == 'F') {
-                mat_pB[iter1][iter2] = pB;
-                mat_pB[iter2][iter1] = pB;
+                mat_p[iter1][iter2] = pB;
+                mat_p[iter2][iter1] = pB;
                 // Compositional distance -- full symmetry
-                if (dfB == 0) {
-                    mat_dCFS[iter1][iter2] = 0.0;
-                    mat_dCFS[iter2][iter1] = 0.0;
+                if (df == 0) {
+                    mat_dcdf[iter1][iter2] = 0.0;
+                    mat_dcdf[iter2][iter1] = 0.0;
                 } else {
-                    mat_dCFS[iter1][iter2] = sqrt(BTS/dfB);
-                    mat_dCFS[iter2][iter1] = sqrt(BTS/dfB);
+                    mat_dcdf[iter1][iter2] = sqrt(BTS/df);
+                    mat_dcdf[iter2][iter1] = sqrt(BTS/df);
                 }
-                if (mat_dCFS[iter1][iter2] > max_dCDF) {
-                    max_dCDF = mat_dCFS[iter1][iter2];
+                if (mat_dcdf[iter1][iter2] > max_dcdf) {
+                    max_dcdf = mat_dcdf[iter1][iter2];
                 }
-                if (mat_dCFS[iter1][iter2] < min_dCDF) {
-                    min_dCDF = mat_dCFS[iter1][iter2];
+                if (mat_dcdf[iter1][iter2] < min_dcdf) {
+                    min_dcdf = mat_dcdf[iter1][iter2];
                 }
                 //Euclidean distance based on distance matrix
-                d_EFS = 0.0;
+                d_efs = 0.0;
                 for (size_t m = 0; m != rows_columns; ++m) {
                     for (size_t n = m+1; n != rows_columns; ++n) {
                         // dm is defined as unsigned long so this if-else statement is needed
                         if (dm[m][n] > dm[n][m]) {
-                            d_EFS = d_EFS + SQR(((double)(dm[m][n] - dm[n][m]))/sum_dm);
+                            d_efs = d_efs + SQR(((double)(dm[m][n] - dm[n][m]))/sum_dm);
                         } else {
-                            d_EFS = d_EFS + SQR(((double)(dm[n][m] - dm[m][n]))/sum_dm);
+                            d_efs = d_efs + SQR(((double)(dm[n][m] - dm[m][n]))/sum_dm);
                         }
                     }
                 }
-                d_EFS = sqrt(d_EFS);
-                mat_dEFS[iter1][iter2] = d_EFS;
-                mat_dEFS[iter2][iter1] = d_EFS;
+                d_efs = sqrt(d_efs);
+                mat_defs[iter1][iter2] = d_efs;
+                mat_defs[iter2][iter1] = d_efs;
                 //Euclidean distance based on marginal sum of off-diagonal values of distance matrix
-                d_EMS = 0.0;
+                d_ems = 0.0;
                 // set all marginal elements in divergence matrix to zero
                 for (size_t i = 0; i != rows_columns; ++i) {
                     row_sum[i] = 0.0;
@@ -1302,25 +1302,25 @@ int main(int argc, char** argv){
                     col_sum[i] = col_sum[i]/sum_dm;
                 }
                 for (size_t i = 0; i != rows_columns; ++i) {
-                    d_EMS = d_EMS + (double)(SQR(row_sum[i] - col_sum[i]));
+                    d_ems = d_ems + (double)(SQR(row_sum[i] - col_sum[i]));
                 }
-                d_EMS = sqrt(d_EMS);
-                mat_dEMS[iter1][iter2] = d_EMS;
-                mat_dEMS[iter2][iter1] = d_EMS;
+                d_ems = sqrt(d_ems);
+                mat_dems[iter1][iter2] = d_ems;
+                mat_dems[iter2][iter1] = d_ems;
                 if (iter1 < iter2) {
                     cout << "\rNumber of comparisons left = " << --total;
                     fflush(NULL);
                     outfile1 << taxon[iter1] << ",";
                     outfile1 << taxon[iter2] << ",";
                     outfile1 << BTS << ",";
-                    outfile1 << dfB << ",";
+                    outfile1 << df << ",";
                     outfile1 << pB << ",";
-                    outfile1 << d_EFS << ",";
-                    outfile1 << d_EMS << ",";
-                    if (dfB == 0) {
+                    outfile1 << d_efs << ",";
+                    outfile1 << d_ems << ",";
+                    if (df == 0) {
                         outfile1 << "Nan,";
                     } else {
-                        outfile1 << sqrt(BTS/dfB) << ",";
+                        outfile1 << sqrt(BTS/df) << ",";
                     }
                     outfile1 << sum_dm << endl;
                 }
@@ -1344,10 +1344,10 @@ int main(int argc, char** argv){
             outfile5 << left << setw(10) << taxon[i];
             outfile6 << left << setw(10) << taxon[i];
             for (vector<vector<int> >::size_type j = 0; j != taxon.size(); j++) {
-                outfile2 << "," << fixed << setprecision(11) << mat_pB[i][j];
-                outfile3 << "\t" << fixed << mat_dEFS[i][j];
-                outfile4 << "\t" << fixed << mat_dEMS[i][j];
-                outfile5 << "\t" << fixed << mat_dCFS[i][j];
+                outfile2 << "," << fixed << setprecision(11) << mat_p[i][j];
+                outfile3 << "\t" << fixed << mat_defs[i][j];
+                outfile4 << "\t" << fixed << mat_dems[i][j];
+                outfile5 << "\t" << fixed << mat_dcdf[i][j];
             }
             outfile2 << endl;
             outfile3 << endl;
@@ -1375,12 +1375,12 @@ int main(int argc, char** argv){
         cout << endl;
         cout << "   Positions .................................. " << sites.size() << endl;
         cout << "   Number of tests ............................ " << counter << endl;
-        cout << "   Smallest p-value (Bowker) .................. " << scientific << min_pB << endl;
+        cout << "   Smallest p-value (Bowker) .................. " << scientific << min_p << endl;
         cout << "   Family-wise error rate (0.05/tests) ........ " << scientific << (double) 0.05/counter << endl;
         cout << "   Proportion of rejected tests ............... " << fixed << (double) rejectB/counter << endl;
-        cout << "   Min(d_CDF) ................................. " << fixed << min_dCDF << endl;
-        cout << "   Max(d_CDF) ................................. " << fixed << max_dCDF << endl;
-        if (min_pB < (0.05/counter)) {
+        cout << "   Min(d_CDF) ................................. " << fixed << min_dcdf << endl;
+        cout << "   Max(d_CDF) ................................. " << fixed << max_dcdf << endl;
+        if (min_p < (0.05/counter)) {
             cout << endl;
             cout << "WARNING:" << endl << endl;
             cout << "   At least one pair of sequences is unlikely to have evolved" << endl;
@@ -1392,7 +1392,7 @@ int main(int argc, char** argv){
     } else {
         cout << "File, Taxa, Sites, Min(p), Failed" << endl;
         cout << inName << "," << taxon.size() << "," << sites.size() << "," ;
-        cout << scientific << min_pB << "," << fixed << (double) rejectB/counter << endl;
+        cout << scientific << min_p << "," << fixed << (double) rejectB/counter << endl;
     }
     return 0;
 }
