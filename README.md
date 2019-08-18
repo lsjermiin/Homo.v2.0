@@ -1,13 +1,17 @@
-NAME        Homo
+NAME
+Homo
 
-VERSION     2.0
+VERSION
+2.0
 
-COPYRIGHT   Copyright © 2019 Lars Sommer Jermiin. All rights reserved.
+COPYRIGHT
+Copyright © 2019 Lars Sommer Jermiin. All rights reserved.
 
-WARNING     The copyright holder takes no legal responsibility for the correctness of 
-            results obtained using this program.
+WARNING
+The copyright holder takes no legal responsibility for the correctness of results obtained using this program.
 
-AUTHOR      Lars Sommer Jermiin
+AUTHOR
+Lars Sommer Jermiin
 
 ADDRESS     Australian National University
             University College Dublin            
