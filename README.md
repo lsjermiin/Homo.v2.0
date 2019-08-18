@@ -1,4 +1,4 @@
-# Homo2.0 -- NOTES REGARDING SOFTWARE
+# Homo version 2.0
 
 NAME        Homo
 
