@@ -1,4 +1,4 @@
-# Homo version 2.0
+# Homo 2.0
 
 NAME        Homo
 
