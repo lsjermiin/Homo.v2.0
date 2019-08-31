@@ -20,7 +20,7 @@
 //
 // Date begun         : 14 April, 2019
 //
-// Date modified      : 18 August, 2019
+// Date modified      : 25 August, 2019
 //
 // Copyright          : Copyright © 2019 Lars Sommer Jermiin.
 //                      All rights reserved.
@@ -1031,18 +1031,20 @@ int main(int argc, char** argv){
     unsigned long sum_dm(0), rejectB(0);
     unsigned long total, counter;
     unsigned long dm[max_array][max_array];            // 2D divergence matrix
-    double d_efs(0.0), d_ems(0.0);
+    double d_efs(0.0); // Euclidean distance -- full symmetry
+    double d_ems(0.0); // Euclidean distance -- marginal symmetry
+    double d_cfs(0.0); // Compositional distance -- full symmetry
     double row_sum[max_array], col_sum[max_array];
     double min_p(1.0), family_Wise_Error_Rate(0.05);
-    double max_dcdf(-numeric_limits<double>::max());
-    double min_dcdf(numeric_limits<double>::max());
+    double max_dcfs(-numeric_limits<double>::max());
+    double min_dcfs(numeric_limits<double>::max());
     long double BTS(0.0), pB(0.0);
     vector<int> sites;
     vector<double> row_of_double;
-    vector<vector<double> > mat_dobs, mat_p, mat_dcdf, mat_defs, mat_dems;
+    vector<vector<double> > mat_dobs, mat_p, mat_dcfs, mat_defs, mat_dems;
     string nature_of_data, survey;
-    string inName, outName1, outName2, outName3, outName4, outName5, outName6;
-    ofstream outfile1, outfile2, outfile3, outfile4, outfile5, outfile6;
+    string inName, outName1, outName2, outName3, outName4, outName5;
+    ofstream outfile1, outfile2, outfile3, outfile4, outfile5;
     
     if(argc != 4) {
         cerr << "\nHomo v2.0 Copyright 2019, Lars Jermiin" << endl;
@@ -1102,9 +1104,9 @@ int main(int argc, char** argv){
         for (string::size_type i = 0; i != inName.size() && inName[i] != '.'; ++i) {
             outName1 += inName[i];
         }
-        outName5 = outName1 + "_dCFS.dis";
-        outName4 = outName1 + "_dEMS.dis";
-        outName3 = outName1 + "_dEFS.dis";
+        outName5 = outName1 + "_dems.dis";
+        outName4 = outName1 + "_defs.dis";
+        outName3 = outName1 + "_dcfs.dis";
         outName2 = outName1 + "_Pvalues.csv";
         outName1 = outName1 + "_Summary.csv";
     }
@@ -1154,7 +1156,7 @@ int main(int argc, char** argv){
     mat_p = mat_dobs;
     mat_defs = mat_dobs;
     mat_dems = mat_dobs;
-    mat_dcdf = mat_dobs;
+    mat_dcfs = mat_dobs;
     if (toupper(survey[0]) == 'F') {
         outfile1.open(outName1.c_str());
         outfile1 << "Program, Homo" << endl;
@@ -1197,7 +1199,7 @@ int main(int argc, char** argv){
             default: outfile1 << "Recoded amino acids (AGPS|DENQHKRT|MIL|W|FY|CV) [KGB6]" << endl; break;
         }
         outfile1 << "Sequences," << taxon.size() << endl << endl;
-        outfile1 << "Taxon 1,Taxon 2,Bowker,df,p,dEFS,dEMS,dCDF,Sites" << endl;
+        outfile1 << "Taxon 1,Taxon 2,Bowker,df,p,defs,dems,dcfs,Sites" << endl;
         cout << endl;
     }
     total = taxon.size() * (taxon.size() - 1)/2;
@@ -1222,7 +1224,6 @@ int main(int argc, char** argv){
                     sum_dm += dm[m][n];
                 }
             }
-            
             // Bowker's matched-pairs test of symmetry
             BTS = 0.0;
             df = 0;
@@ -1250,17 +1251,18 @@ int main(int argc, char** argv){
                 mat_p[iter2][iter1] = pB;
                 // Compositional distance -- full symmetry
                 if (df == 0) {
-                    mat_dcdf[iter1][iter2] = 0.0;
-                    mat_dcdf[iter2][iter1] = 0.0;
+                    mat_dcfs[iter1][iter2] = 0.0;
+                    mat_dcfs[iter2][iter1] = 0.0;
                 } else {
-                    mat_dcdf[iter1][iter2] = sqrt(BTS/df);
-                    mat_dcdf[iter2][iter1] = sqrt(BTS/df);
+                    d_cfs = sqrt(BTS/df);
+                    mat_dcfs[iter1][iter2] = d_cfs;
+                    mat_dcfs[iter2][iter1] = d_cfs;
                 }
-                if (mat_dcdf[iter1][iter2] > max_dcdf) {
-                    max_dcdf = mat_dcdf[iter1][iter2];
+                if (mat_dcfs[iter1][iter2] > max_dcfs) {
+                    max_dcfs = mat_dcfs[iter1][iter2];
                 }
-                if (mat_dcdf[iter1][iter2] < min_dcdf) {
-                    min_dcdf = mat_dcdf[iter1][iter2];
+                if (mat_dcfs[iter1][iter2] < min_dcfs) {
+                    min_dcfs = mat_dcfs[iter1][iter2];
                 }
                 //Euclidean distance based on distance matrix
                 d_efs = 0.0;
@@ -1320,7 +1322,7 @@ int main(int argc, char** argv){
                     if (df == 0) {
                         outfile1 << "Nan,";
                     } else {
-                        outfile1 << sqrt(BTS/df) << ",";
+                        outfile1 << d_cfs << ",";
                     }
                     outfile1 << sum_dm << endl;
                 }
@@ -1342,24 +1344,21 @@ int main(int argc, char** argv){
             outfile3 << left << setw(10) << taxon[i];
             outfile4 << left << setw(10) << taxon[i];
             outfile5 << left << setw(10) << taxon[i];
-            outfile6 << left << setw(10) << taxon[i];
             for (vector<vector<int> >::size_type j = 0; j != taxon.size(); j++) {
                 outfile2 << "," << fixed << setprecision(11) << mat_p[i][j];
-                outfile3 << "\t" << fixed << mat_defs[i][j];
-                outfile4 << "\t" << fixed << mat_dems[i][j];
-                outfile5 << "\t" << fixed << mat_dcdf[i][j];
+                outfile3 << "\t" << fixed << mat_dcfs[i][j];
+                outfile4 << "\t" << fixed << mat_defs[i][j];
+                outfile5 << "\t" << fixed << mat_dems[i][j];
             }
             outfile2 << endl;
             outfile3 << endl;
             outfile4 << endl;
             outfile5 << endl;
-            outfile6 << endl;
         }
         outfile2.close();
         outfile3.close();
         outfile4.close();
         outfile5.close();
-        outfile6.close();
         cout << endl;
         cout << endl;
     }
@@ -1369,17 +1368,17 @@ int main(int argc, char** argv){
         cout << endl;
         cout << "   Table with all estimates ................... " << outName1 << endl;
         cout << "   Matrix with estimates of p-values .......... " << outName2 << endl;
-        cout << "   Matrix with estimates of d_EFS ............. " << outName3 << endl;
-        cout << "   Matrix with estimates of d_EMS ............. " << outName4 << endl;
-        cout << "   Matrix with estimates of d_CDF ............. " << outName5 << endl;
+        cout << "   Matrix with estimates of d_cfs ............. " << outName3 << endl;
+        cout << "   Matrix with estimates of d_efs ............. " << outName4 << endl;
+        cout << "   Matrix with estimates of d_ems ............. " << outName5 << endl;
         cout << endl;
         cout << "   Positions .................................. " << sites.size() << endl;
         cout << "   Number of tests ............................ " << counter << endl;
         cout << "   Smallest p-value (Bowker) .................. " << scientific << min_p << endl;
         cout << "   Family-wise error rate (0.05/tests) ........ " << scientific << (double) 0.05/counter << endl;
         cout << "   Proportion of rejected tests ............... " << fixed << (double) rejectB/counter << endl;
-        cout << "   Min(d_CDF) ................................. " << fixed << min_dcdf << endl;
-        cout << "   Max(d_CDF) ................................. " << fixed << max_dcdf << endl;
+        cout << "   Min(d_cfs) ................................. " << fixed << min_dcfs << endl;
+        cout << "   Max(d_cfs) ................................. " << fixed << max_dcfs << endl;
         if (min_p < (0.05/counter)) {
             cout << endl;
             cout << "WARNING:" << endl << endl;
