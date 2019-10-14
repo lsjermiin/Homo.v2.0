@@ -20,7 +20,7 @@
 //
 // Date begun         : 14 April, 2019
 //
-// Date modified      : 25 August, 2019
+// Date modified      : 14 October, 2019
 //
 // Copyright          : Copyright © 2019 Lars Sommer Jermiin.
 //                      All rights reserved.
@@ -884,7 +884,7 @@ vector<int> Translator(unsigned datatype, string seq) {
 void Read_Input(string inname, unsigned datatype){
     unsigned long alignment_length(0);
     unsigned long counter(0);
-    string seq(""), str(""); // temporary string used to store input
+    string seq(""), str(""), tmp(""); // temporary string used to store input
     vector<int> sequence;     // temporary vector used to store input
     ifstream infile;
     
@@ -895,8 +895,27 @@ void Read_Input(string inname, unsigned datatype){
     }
     while (getline(infile, str)) {
         if (!str.empty()) {
-            if (str[0] == '>') {
+            // remove blank space in string
+            tmp.clear();
+            for (std::string::size_type i = 0; i != str.size(); ++i) {
+                if (!isblank(str[i])) {
+                    tmp.push_back(str[i]);
+                }
+            }
+            if (tmp[0] == '>') {
                 if (seq.size() > 0) {
+                    if (datatype > 14 && datatype < 18) {
+                        if (seq.size() % 2 != 0) {
+                            std::cerr << "\nERROR: expected sequence of di-nucleotides" << "\n" << std::endl;
+                            exit(1);
+                        }
+                    }
+                    if (datatype > 17 && datatype < 28) {
+                        if (seq.size() % 3 != 0) {
+                            std::cerr << "\nERROR: expected sequence of codons" << "\n" << std::endl;
+                            exit(1);
+                        }
+                    }
                     sequence = Translator(datatype, seq);
                     alignment.push_back(sequence); // stores sequence in vector
                     if (alignment_length == 0)
@@ -904,12 +923,12 @@ void Read_Input(string inname, unsigned datatype){
                     sequence.clear();
                     seq.clear();
                 }
-                str.erase(str.begin()); // removes first character from name
-                taxon.push_back(str); // stores sequence name in vector
-                str.clear();
+                tmp.erase(tmp.begin()); // removes first character from name
+                taxon.push_back(tmp); // stores sequence name in vector
             } else {
-                seq += str;
+                seq += tmp;
             }
+            str.clear();
         }
     }
     // Store last sequence in vector
