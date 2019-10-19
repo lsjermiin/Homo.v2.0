@@ -20,7 +20,7 @@
 //
 // Date begun         : 14 April, 2019
 //
-// Date modified      : 14 October, 2019
+// Date modified      : 19 October, 2019
 //
 // Copyright          : Copyright © 2019 Lars Sommer Jermiin.
 //                      All rights reserved.
@@ -62,8 +62,6 @@
 //                       29   14-state genotype data (A|C|G|T|K|M|R|Y|S|W|B|D|H|V) (14 states)
 //                       30   Amino acids (A|G|P|S|T|D|E|N|Q|H|K|R|M|I|V|L|W|F|Y|C)  (20 states)
 //                       31   Recoded amino acids Dayhoff-6 = (AGPST|DENQ|HKR|MIVL|WFY|C)   (6 states)
-//                       32   Recoded amino acids Susko and Roger-6 = (APST|DENG|QKR|MIVL|WC|FYH)  (6 states)
-//                       33   Recoded amino acids Kosiol, Goldman, Buttimore-6 = (AGPS|DENQHKRT|MIL|W|FY|CV)  (6 states)
 //
 //                      Homo also computes four compositional distances for each
 //                      type of data:
@@ -132,7 +130,6 @@ using std::cin;
 using std::cout;
 using std::cerr;
 using std::endl;
-
 
 // The following variables are declared externally because they
 // are needed in different functions
@@ -794,7 +791,7 @@ vector<int> Translator(unsigned datatype, string seq) {
                 }
             }
             break;
-        case 31: // Dayhoff-6 (AGPST|DENQ|HKR|MIVL|WFY|C)
+        default: // Dayhoff-6 (AGPST|DENQ|HKR|MIVL|WFY|C)
             for (string::size_type i = 0; i != seq.size(); ++i) {
                 switch (toupper(seq[i])) {
                     case 'A': seq_data.push_back(0); break;
@@ -817,60 +814,6 @@ vector<int> Translator(unsigned datatype, string seq) {
                     case 'W': seq_data.push_back(4); break;
                     case 'Y': seq_data.push_back(4); break;
                     case 'C': seq_data.push_back(5); break;
-                    default : seq_data.push_back(6); break; // In case of other characters
-                }
-            }
-            break;
-        case 32: // Susko and Roger-6 (APST|DENG|QKR|MIVL|WC|FYH)
-            for (string::size_type i = 0; i != seq.size(); ++i) {
-                switch (toupper(seq[i])) {
-                    case 'A': seq_data.push_back(0); break;
-                    case 'P': seq_data.push_back(0); break;
-                    case 'S': seq_data.push_back(0); break;
-                    case 'T': seq_data.push_back(0); break;
-                    case 'D': seq_data.push_back(1); break;
-                    case 'E': seq_data.push_back(1); break;
-                    case 'N': seq_data.push_back(1); break;
-                    case 'G': seq_data.push_back(1); break;
-                    case 'Q': seq_data.push_back(2); break;
-                    case 'K': seq_data.push_back(2); break;
-                    case 'R': seq_data.push_back(2); break;
-                    case 'M': seq_data.push_back(3); break;
-                    case 'I': seq_data.push_back(3); break;
-                    case 'L': seq_data.push_back(3); break;
-                    case 'V': seq_data.push_back(3); break;
-                    case 'W': seq_data.push_back(4); break;
-                    case 'C': seq_data.push_back(4); break;
-                    case 'F': seq_data.push_back(5); break;
-                    case 'Y': seq_data.push_back(5); break;
-                    case 'H': seq_data.push_back(5); break;
-                    default : seq_data.push_back(6); break; // In case of other characters
-                }
-            }
-            break;
-        default: // Kosiol, Goldman, Buttimore-6 (AGPS|DENQHKRT|MIL|W|FY|CV)
-            for (string::size_type i = 0; i != seq.size(); ++i) {
-                switch (toupper(seq[i])) {
-                    case 'A': seq_data.push_back(0); break;
-                    case 'G': seq_data.push_back(0); break;
-                    case 'P': seq_data.push_back(0); break;
-                    case 'S': seq_data.push_back(0); break;
-                    case 'D': seq_data.push_back(1); break;
-                    case 'E': seq_data.push_back(1); break;
-                    case 'N': seq_data.push_back(1); break;
-                    case 'Q': seq_data.push_back(1); break;
-                    case 'H': seq_data.push_back(1); break;
-                    case 'K': seq_data.push_back(1); break;
-                    case 'R': seq_data.push_back(1); break;
-                    case 'T': seq_data.push_back(1); break;
-                    case 'M': seq_data.push_back(2); break;
-                    case 'I': seq_data.push_back(2); break;
-                    case 'L': seq_data.push_back(2); break;
-                    case 'W': seq_data.push_back(3); break;
-                    case 'F': seq_data.push_back(4); break;
-                    case 'Y': seq_data.push_back(4); break;
-                    case 'C': seq_data.push_back(5); break;
-                    case 'V': seq_data.push_back(5); break;
                     default : seq_data.push_back(6); break; // In case of other characters
                 }
             }
@@ -1067,7 +1010,8 @@ int main(int argc, char** argv){
     
     if(argc != 4) {
         cerr << "\nHomo v2.0 Copyright 2019, Lars Jermiin" << endl;
-        cerr << "\nERROR -- use command: homo <infile> <b|f> <1|...|33>\n" << endl;
+        cerr << " Contact: lars.jermiin [at] anu.edu.au / ucd.ie" << endl;
+        cerr << "\nERROR -- use command: homo <infile> <b|f> <1|...|31>\n" << endl;
         cerr << "  infile   Fasta-formatted alignment" << endl;
         cerr << "     b|f   Brief or full report of results" << endl;
         cerr << "       1   Nucleotides; 4 states (A|C|G|T)" << endl;
@@ -1101,8 +1045,6 @@ int main(int argc, char** argv){
         cerr << "      29   Genotypes; 14 states (A|C|G|T|K|M|R|Y|S|W|B|D|H|V)" << endl;
         cerr << "      30   Amino acids; 20 states (A|G|P|S|T|D|E|N|Q|H|K|R|M|I|V|L|W|F|Y|C)" << endl;
         cerr << "      31   Amino acids;  6 states (AGPST|DENQ|HKR|MIVL|WFY|C) [D6]" << endl;
-        cerr << "      32   Amino acids;  6 states (APST|DENG|QKR|MIVL|WC|FYH) [SR6]" << endl;
-        cerr << "      33   Amino acids;  6 states (AGPS|DENQHKRT|MIL|W|FY|CV) [KGB6]\n" << endl;
         cerr << endl;
         exit(1);
     }
@@ -1110,8 +1052,8 @@ int main(int argc, char** argv){
     survey = argv[2];
     nature_of_data = argv[3];
     dataType = stoi(nature_of_data);
-    if (dataType < 1 || dataType > 33) {
-        cerr << "\nPROGRAM ABORTED - incorrect choice of data: [1|...|33]\n" << endl;
+    if (dataType < 1 || dataType > 31) {
+        cerr << "\nPROGRAM ABORTED - incorrect choice of data: [1|...|31]\n" << endl;
         exit(1);
     }
     if (toupper(survey[0]) != 'F' && toupper(survey[0]) != 'B') {
@@ -1160,8 +1102,6 @@ int main(int argc, char** argv){
         case 28: rows_columns = TEN; break;
         case 29: rows_columns = FOURTEEN; break;
         case 30: rows_columns = TWENTY; break;
-        case 31: rows_columns = SIX; break;
-        case 32: rows_columns = SIX; break;
         default: rows_columns = SIX; break;
     }
     Read_Input(inName, dataType);
@@ -1213,9 +1153,7 @@ int main(int argc, char** argv){
             case 28: outfile1 << "Genotypes (A|C|G|T|K|M|R|Y|S|W)" << endl; break;
             case 29: outfile1 << "Genotypes (A|C|G|T|K|M|R|Y|S|W|B|D|H|V)" << endl; break;
             case 30: outfile1 << "Amino acids (A|G|P|S|T|D|E|N|Q|H|K|R|M|I|V|L|W|F|Y|C)" << endl; break;
-            case 31: outfile1 << "Recoded amino acids (AGPST|DENQ|HKR|MIVL|WFY|C) [D6]" << endl; break;
-            case 32: outfile1 << "Recoded amino acids (APST|DENG|QKR|MIVL|WC|FYH) [SR6]" << endl; break;
-            default: outfile1 << "Recoded amino acids (AGPS|DENQHKRT|MIL|W|FY|CV) [KGB6]" << endl; break;
+            default: outfile1 << "Recoded amino acids (AGPST|DENQ|HKR|MIVL|WFY|C) [D6]" << endl; break;
         }
         outfile1 << "Sequences," << taxon.size() << endl << endl;
         outfile1 << "Taxon 1,Taxon 2,Bowker,df,p,defs,dems,dcfs,Sites" << endl;
