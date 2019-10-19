@@ -27,8 +27,8 @@ PURPOSE     Homo conducts the matched-pairs test of symmetry for pairs of sequen
  
 FORMAT      Sequences must be stored in the FASTA format.
  
-DATA TYPES  Sequences can be read a strings of one, two, or three nucleotides, strings 
-            of 10- or 14-state genotypes, or as strings of amino acids.
+DATA TYPES  Sequences can be read as strings of singles, pairs or triplets of nucleotides, 
+            as strings of 10- or 14-state genotypes, or as strings of amino acids.
 
 COMPILE     g++ homo_2.0.cpp -o homo -O3 -Wall -lm
 
